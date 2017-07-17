@@ -125,7 +125,7 @@ class Requester:
 
     #############################################################
 
-    def __init__(self, login_or_token, password, base_url, timeout, client_id, client_secret, user_agent, per_page, api_preview):
+    def __init__(self, login_or_token, password, base_url, timeout, client_id, client_secret, user_agent, per_page, api_preview, hostname=None):
         self._initializeDebugFeature()
 
         if password is not None:
@@ -142,7 +142,10 @@ class Requester:
 
         self.__base_url = base_url
         o = urlparse.urlparse(base_url)
-        self.__hostname = o.hostname
+        if hostname is not None:
+            self.__hostname = hostname
+        else:
+            self.__hostname = o.hostname
         self.__port = o.port
         self.__prefix = o.path
         self.__timeout = timeout
@@ -286,7 +289,7 @@ class Requester:
 
         self.__log(verb, url, requestHeaders, input, status, responseHeaders, output)
 
-        if status == 301 and 'location' in responseHeaders:
+        if (status == 301 or status == 302) and 'location' in responseHeaders:
             return self.__requestRaw(original_cnx, verb, responseHeaders['location'], requestHeaders, input)
 
         return status, responseHeaders, output
